@@ -1139,7 +1139,8 @@ describe('jsonl transcript metrics', () => {
                 tokensReclaimed: 5
             },
             thinkingEffort: { value: 'high', known: true },
-            sessionName: 'Combined Session'
+            sessionName: 'Combined Session',
+            mcpSession: null
         });
     });
 
@@ -2271,5 +2272,34 @@ describe('jsonl transcript metrics', () => {
             totalTokens: 0,
             requestCount: 0
         });
+    });
+});
+
+describe('transcript MCP session collection', () => {
+    it('collects MCP tools only when asked, in the same pass', async () => {
+        const root = fs.mkdtempSync(path.join(os.tmpdir(), 'ccstatusline-jsonl-mcp-'));
+        try {
+            const transcriptPath = path.join(root, 'session.jsonl');
+            fs.writeFileSync(transcriptPath, [
+                JSON.stringify({ type: 'attachment', attachment: { type: 'deferred_tools_delta', addedNames: ['mcp__context7__query', 'Read'], removedNames: [] } }),
+                '{broken json',
+                JSON.stringify({ type: 'attachment', attachment: { type: 'mcp_instructions_delta', addedNames: ['deepwiki'], removedNames: [] } })
+            ].join('\n'));
+
+            const without = await getTranscriptAnalysis(transcriptPath);
+            expect(without.mcpSession).toBeNull();
+
+            const analysis = await getTranscriptAnalysis(transcriptPath, { includeMcpSession: true });
+            expect(analysis.mcpSession?.toolsObserved).toBe(true);
+            expect(Array.from(analysis.mcpSession?.tools ?? [])).toEqual(['context7__query']);
+            expect(Array.from(analysis.mcpSession?.instructionServers.values() ?? [])).toEqual(['deepwiki']);
+        } finally {
+            fs.rmSync(root, { recursive: true, force: true });
+        }
+    });
+
+    it('returns no MCP session for a missing transcript', async () => {
+        const analysis = await getTranscriptAnalysis(path.join(os.tmpdir(), 'ccstatusline-missing', 'none.jsonl'), { includeMcpSession: true });
+        expect(analysis.mcpSession).toBeNull();
     });
 });
