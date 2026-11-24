@@ -182,7 +182,7 @@ async function renderMultipleLines(data: StatusJSON, rawData: Record<string, unk
     const mcpStatus = hasMcpStatusWidget
         ? getMcpStatus(
             transcriptAnalysis?.mcpSession ?? null,
-            getDefaultMcpConfigOptions(data.workspace?.project_dir ?? data.cwd ?? data.workspace?.current_dir)
+            getDefaultMcpConfigOptions(data.workspace?.project_dir ?? data.cwd ?? data.workspace?.current_dir, data.session_id)
         )
         : null;
 

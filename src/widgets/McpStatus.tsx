@@ -69,7 +69,7 @@ const EMPTY_STATE: HideableState = { key: 'empty', label: 'when no MCP servers a
 const HEALTHY_STATE: HideableState = { key: 'healthy', label: 'when every enabled server is connected' };
 
 // Display order, wording, health symbol and severity of each state. Disabled
-// servers were turned off on purpose, so they carry no severity.
+// and held servers were turned off on purpose, so they carry no severity.
 const STATES: { state: McpServerState; text: string; symbol: string | null; severity: Severity | null }[] = [
     { state: 'connected', text: 'connected', symbol: '✓', severity: 'healthy' },
     { state: 'needs-auth', text: 'needs auth', symbol: '!', severity: 'warning' },
@@ -77,10 +77,11 @@ const STATES: { state: McpServerState; text: string; symbol: string | null; seve
     { state: 'pending-approval', text: 'pending approval', symbol: '…', severity: 'warning' },
     { state: 'blocked', text: 'blocked', symbol: '⊘', severity: 'problem' },
     { state: 'disabled', text: 'disabled', symbol: null, severity: null },
+    { state: 'held', text: 'held by scope', symbol: null, severity: null },
     { state: 'configured', text: 'configured', symbol: '○', severity: 'warning' }
 ];
 const PROBLEM_STATES = new Set<McpServerState>(['needs-auth', 'not-connected', 'pending-approval', 'blocked']);
-const INACTIVE_STATES = new Set<McpServerState>(['disabled', 'blocked']);
+const INACTIVE_STATES = new Set<McpServerState>(['disabled', 'blocked', 'held']);
 
 const PREVIEW_STATUS: McpStatusData = {
     servers: [

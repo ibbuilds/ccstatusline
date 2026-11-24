@@ -1,4 +1,5 @@
 import * as fs from 'node:fs';
+import * as os from 'node:os';
 import * as path from 'node:path';
 
 import {
@@ -22,6 +23,11 @@ import {
  *   configured, disabled for the project, awaiting `.mcp.json` approval, or
  *   blocked by policy. Only server names are read; definitions (commands, URLs,
  *   headers, env) are never copied out.
+ * - CC Optimizer's MCP scope, when it is installed and set to `project`: it
+ *   writes the servers it held back from this session to
+ *   `<state dir>/<session_id>.mcp.json`. Those never started, so they are
+ *   `held` (inactive, not a problem) instead of `not-connected`. Without the
+ *   file nothing changes.
  *
  * Neither source distinguishes "failed to connect" from "connection error" or
  * "still connecting": a configured server whose tools never reached an
@@ -35,6 +41,7 @@ export type McpServerState
         | 'pending-approval'
         | 'disabled'
         | 'blocked'
+        | 'held'
         | 'configured';
 
 export type McpConfigScope = 'local' | 'project' | 'user';
@@ -74,6 +81,8 @@ export interface McpConfigOptions {
     /** User-level settings files, e.g. `<config>/settings.json`. Project layers are derived from projectDir. */
     userSettingsPaths: string[];
     managedSettingsPaths: string[];
+    /** CC Optimizer's per-session MCP scope file, if any. */
+    scopeStatusPath?: string;
 }
 
 const MCP_TOOL_PREFIX = 'mcp__';
@@ -329,10 +338,52 @@ function getManagedSettingsPaths(): string[] {
     return ['/etc/claude-code/managed-settings.json'];
 }
 
+/** Where CC Optimizer writes a session's MCP scope status. */
+export function getScopeStatusPath(sessionId: string | undefined): string | undefined {
+    const id = (sessionId ?? '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
+    if (!id) {
+        return undefined;
+    }
+    const dir = process.env.CC_OPTIMIZER_STATE_DIR ?? path.join(os.tmpdir(), 'cc-optimizer');
+    return path.join(dir, `${id}.mcp.json`);
+}
+
+/** Server names CC Optimizer held back from the session; empty when the file is absent or not version 1. */
+export function readScopeHeld(filePath: string | undefined): string[] {
+    if (!filePath) {
+        return [];
+    }
+    const file = readJsonObject(filePath);
+    return file?.version === 1 && file.scope === 'project' ? stringArray(file.held) : [];
+}
+
+/** Marks held servers; a server the session reported as connected keeps that state. */
+export function applyScopeHeld(data: McpStatusData, held: string[]): McpStatusData {
+    if (held.length === 0) {
+        return data;
+    }
+    const heldKeys = new Map(held.map(name => [normalizeMcpServerName(name), name]));
+    const servers = data.servers.map((server) => {
+        const key = normalizeMcpServerName(server.name);
+        if (!heldKeys.has(key)) {
+            return server;
+        }
+        heldKeys.delete(key);
+        return server.state === 'connected' || server.state === 'needs-auth' ? server : { ...server, state: 'held' as const };
+    });
+    for (const name of heldKeys.values()) {
+        servers.push({ name, state: 'held', scope: 'session' });
+    }
+    servers.sort((a, b) => a.name.localeCompare(b.name, 'en', { sensitivity: 'base' }));
+    return { ...data, servers };
+}
+
 /** Options for the active Claude profile, honoring CLAUDE_CONFIG_DIR. */
-export function getDefaultMcpConfigOptions(projectDir: string | undefined): McpConfigOptions {
+export function getDefaultMcpConfigOptions(projectDir: string | undefined, sessionId?: string): McpConfigOptions {
     const configDir = getClaudeConfigDir();
+    const scopeStatusPath = getScopeStatusPath(sessionId);
     return {
+        ...(scopeStatusPath ? { scopeStatusPath } : {}),
         projectDir,
         claudeJsonPath: getClaudeJsonPath(),
         userSettingsPaths: [path.join(configDir, 'settings.local.json'), path.join(configDir, 'settings.json')],
@@ -341,5 +392,5 @@ export function getDefaultMcpConfigOptions(projectDir: string | undefined): McpC
 }
 
 export function getMcpStatus(session: McpSessionState | null, options: McpConfigOptions): McpStatusData {
-    return resolveMcpStatus(readMcpConfig(options), session);
+    return applyScopeHeld(resolveMcpStatus(readMcpConfig(options), session), readScopeHeld(options.scopeStatusPath));
 }

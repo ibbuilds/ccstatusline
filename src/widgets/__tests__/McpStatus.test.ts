@@ -102,6 +102,13 @@ describe('McpStatusWidget render', () => {
         expect(render(item({ mode: 'problems' }), status([['a', 'connected'], ['b', 'disabled']]))).toBeNull();
     });
 
+    it('leaves servers held by an MCP scope out of the enabled count and the problems', () => {
+        const scoped = status([['p1', 'connected'], ['u1', 'held'], ['claude.ai Gmail', 'held']]);
+        expect(render(item(), scoped)).toBe('MCP 1/1');
+        expect(render(item({ mode: 'detailed' }), scoped)).toBe('MCP 1 connected | 2 held by scope');
+        expect(render(item({ mode: 'problems' }), scoped)).toBeNull();
+    });
+
     it('does not count pending approval as connected', () => {
         expect(render(item(), status([['a', 'connected'], ['b', 'pending-approval']]))).toBe('MCP 1/2');
     });

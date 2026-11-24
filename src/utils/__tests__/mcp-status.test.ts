@@ -11,10 +11,13 @@ import {
 
 import {
     accumulateMcpSessionRecord,
+    applyScopeHeld,
     createMcpSessionState,
     getMcpStatus,
+    getScopeStatusPath,
     normalizeMcpServerName,
     readMcpConfig,
+    readScopeHeld,
     resolveMcpStatus,
     type McpConfigServer,
     type McpSessionState
@@ -296,5 +299,67 @@ describe('getMcpStatus', () => {
             managedSettingsPaths: []
         });
         expect(status.servers).toEqual([{ name: 'a', state: 'connected', scope: 'session' }]);
+    });
+});
+
+describe('CC Optimizer MCP scope', () => {
+    let dir: string;
+    beforeEach(() => {
+        dir = fs.mkdtempSync(path.join(os.tmpdir(), 'mcp-scope-'));
+    });
+    afterEach(() => {
+        fs.rmSync(dir, { recursive: true, force: true });
+    });
+
+    it('reads held names only from a version 1 project-scope file', () => {
+        const file = path.join(dir, 's.mcp.json');
+        expect(readScopeHeld(file)).toEqual([]);
+        fs.writeFileSync(file, JSON.stringify({ version: 1, scope: 'project', held: ['u1', 3, 'claude.ai Gmail'] }));
+        expect(readScopeHeld(file)).toEqual(['u1', 'claude.ai Gmail']);
+        fs.writeFileSync(file, JSON.stringify({ version: 1, scope: 'global', held: ['u1'] }));
+        expect(readScopeHeld(file)).toEqual([]);
+        fs.writeFileSync(file, '{torn');
+        expect(readScopeHeld(file)).toEqual([]);
+        expect(readScopeHeld(undefined)).toEqual([]);
+    });
+
+    it('marks held servers, adds held connectors and keeps a server the session connected', () => {
+        const data = applyScopeHeld({
+            servers: [
+                { name: 'p1', state: 'connected', scope: 'project' },
+                { name: 'u1', state: 'not-connected', scope: 'user' },
+                { name: 'u2', state: 'connected', scope: 'user' }
+            ],
+            sessionObserved: true
+        }, ['u1', 'u2', 'claude.ai Gmail']);
+        expect(data.servers).toEqual([
+            { name: 'claude.ai Gmail', state: 'held', scope: 'session' },
+            { name: 'p1', state: 'connected', scope: 'project' },
+            { name: 'u1', state: 'held', scope: 'user' },
+            { name: 'u2', state: 'connected', scope: 'user' }
+        ]);
+    });
+
+    it('locates the status file by session id under the state directory', () => {
+        const before = process.env.CC_OPTIMIZER_STATE_DIR;
+        process.env.CC_OPTIMIZER_STATE_DIR = dir;
+        try {
+            expect(getScopeStatusPath('ab-12/..')).toBe(path.join(dir, 'ab-12.mcp.json'));
+            expect(getScopeStatusPath(undefined)).toBeUndefined();
+            fs.writeFileSync(path.join(dir, 'sid.mcp.json'), JSON.stringify({ version: 1, scope: 'project', held: ['u1'] }));
+            const status = getMcpStatus(null, {
+                claudeJsonPath: path.join(dir, 'none.json'),
+                userSettingsPaths: [],
+                managedSettingsPaths: [],
+                scopeStatusPath: getScopeStatusPath('sid')
+            });
+            expect(status.servers).toEqual([{ name: 'u1', state: 'held', scope: 'session' }]);
+        } finally {
+            if (before === undefined) {
+                delete process.env.CC_OPTIMIZER_STATE_DIR;
+            } else {
+                process.env.CC_OPTIMIZER_STATE_DIR = before;
+            }
+        }
     });
 });
