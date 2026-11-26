@@ -314,4 +314,33 @@ describe('resolveContext', () => {
 
         expect(getActiveAgents(runtime).map(agent => agent.kind)).toContain('native');
     });
+
+    it('reports a recent lead model change with its source, for a minute', () => {
+        const runtime = parseFixture('direct-plan-switch');
+        const at = Date.parse('2026-11-24T10:00:03.000Z');
+
+        expect(resolveContext(runtime, { now: at + 5_000 }).change).toEqual({ from: 'claude-opus-5-5', source: 'CC Optimizer' });
+        expect(resolveContext(runtime, { now: at + 61_000 }).change).toBeNull();
+    });
+
+    it('keeps a model change on its own loop: an agent change never marks the lead, and the reverse', () => {
+        const raw = loadRuntimeFixture('viewed-agent');
+        const change = { at: '2026-11-24T10:00:09.000Z', agent: 'w1', role: 'implementer', from: 'claude-opus-5-5', to: 'claude-sonnet-5-5', source: 'policy', reason: 'r' };
+        const runtime = must(parseOptimizerRuntime({ ...raw, modelChanges: [change] }, raw.session));
+
+        expect(resolveContext(runtime, { now: NOW }).change).toEqual({ from: 'claude-opus-5-5', source: 'CC Optimizer' });
+        const main = must(parseOptimizerRuntime({ ...raw, view: null, modelChanges: [change] }, raw.session));
+        expect(resolveContext(main, { now: NOW }).change).toBeNull();
+    });
+
+    it('ignores a change whose target is not the model shown, and malformed change entries', () => {
+        const raw = loadRuntimeFixture('direct-plan-switch');
+        const runtime = must(parseOptimizerRuntime({
+            ...raw,
+            modelChanges: [{ agent: 'lead' }, 'x', { at: '2026-11-24T10:00:03.000Z', agent: 'lead', from: 'claude-sonnet-5-5', to: 'claude-opus-5-5', source: 'you' }]
+        }, raw.session));
+
+        expect(runtime.modelChanges).toHaveLength(1);
+        expect(resolveContext(runtime, { now: Date.parse('2026-11-24T10:00:05.000Z') }).change).toBeNull();
+    });
 });

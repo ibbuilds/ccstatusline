@@ -36,6 +36,15 @@ export interface RuntimeStrategy {
     state: 'authorized' | 'active';
 }
 
+// A model change CC Optimizer recorded for one loop ('lead' or an agent id), with who made it
+export interface RuntimeModelChange {
+    at: string | null;
+    agent: string;
+    from: string | null;
+    to: string;
+    source: string | null;
+}
+
 export interface OptimizerRuntime {
     version: number;
     session: string;
@@ -52,4 +61,5 @@ export interface OptimizerRuntime {
     lead: RuntimeSnapshot;
     agents: RuntimeAgent[];
     view: { agentId: string | null } | null;
+    modelChanges?: RuntimeModelChange[];
 }

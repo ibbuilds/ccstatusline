@@ -7,6 +7,7 @@ import type {
     OptimizerRuntime,
     RuntimeAgent,
     RuntimeAgentStatus,
+    RuntimeModelChange,
     RuntimeNativeState,
     RuntimeSetting,
     RuntimeSnapshot,
@@ -24,6 +25,9 @@ const KEY_PATTERN = /[^A-Za-z0-9_-]/g;
 const KEY_MAX_LENGTH = 80;
 const MAX_FILE_BYTES = 2 * 1024 * 1024;
 export const STALE_PENDING_MS = 10 * 60 * 1000;
+// A model change is shown for this long after it happened, then the model alone
+export const CHANGE_VISIBLE_MS = 60 * 1000;
+const MAX_MODEL_CHANGES = 10;
 
 const nullableString = z.string().nullable().optional().catch(null).transform(value => value ?? null);
 
@@ -98,8 +102,29 @@ const RuntimeSchema = z.looseObject({
     }).nullable().optional().catch(null),
     lead: LeadSchema.nullable().optional().catch(null),
     agents: z.array(z.unknown()).optional().catch([]),
-    view: z.looseObject({ agentId: nullableString }).nullable().optional().catch(null)
+    view: z.looseObject({ agentId: nullableString }).nullable().optional().catch(null),
+    modelChanges: z.array(z.unknown()).optional().catch([])
 });
+
+const ModelChangeSchema = z.looseObject({
+    at: nullableString,
+    agent: z.string().min(1),
+    from: nullableString,
+    to: z.string().min(1),
+    source: nullableString
+});
+
+function toModelChanges(values: unknown[]): RuntimeModelChange[] {
+    const changes: RuntimeModelChange[] = [];
+    for (const value of values.slice(-MAX_MODEL_CHANGES)) {
+        const parsed = ModelChangeSchema.safeParse(value);
+        if (parsed.success) {
+            const { at, agent, from, to, source } = parsed.data;
+            changes.push({ at, agent, from, to, source });
+        }
+    }
+    return changes;
+}
 
 type ParsedSetting = z.infer<typeof SettingSchema> | null;
 type ParsedStep = z.infer<typeof StepSchema> | null | undefined;
@@ -290,7 +315,8 @@ export function parseOptimizerRuntime(raw: unknown, sessionId: string | undefine
         composition,
         lead: toSnapshot(version, data.lead),
         agents: toAgents(version, data.agents ?? []),
-        view
+        view,
+        modelChanges: toModelChanges(data.modelChanges ?? [])
     };
 }
 
@@ -351,6 +377,41 @@ export interface ResolvedContext {
     substitution: boolean;
     // No request seen yet: the model is what the configuration authorizes
     configured: boolean;
+    // A recent change to the shown model, with who made it; provider substitutions are shown as substitution instead
+    change: { from: string; source: string } | null;
+}
+
+const CHANGE_SOURCES: Record<string, string> = {
+    'you': 'you',
+    'optimizer': 'CC Optimizer',
+    'role': 'CC Optimizer',
+    'policy': 'CC Optimizer',
+    'requested': 'CC Optimizer',
+    'inherited': 'CC Optimizer',
+    'claude-code': 'Claude Code'
+};
+
+function recentChange(runtime: OptimizerRuntime, loop: string, model: string | null, now: number): ResolvedContext['change'] {
+    if (!model) {
+        return null;
+    }
+
+    const changes = runtime.modelChanges ?? [];
+    for (let index = changes.length - 1; index >= 0; index--) {
+        const change = changes[index];
+        if (change?.agent !== loop) {
+            continue;
+        }
+        const at = change.at ? Date.parse(change.at) : NaN;
+        if (!Number.isFinite(at) || now - at > CHANGE_VISIBLE_MS || now < at - CHANGE_VISIBLE_MS) {
+            return null;
+        }
+        if (change.source === 'provider' || !change.from || isSameModel(change.from, change.to) || !isSameModel(change.to, model)) {
+            return null;
+        }
+        return { from: change.from, source: CHANGE_SOURCES[change.source ?? ''] ?? 'unknown' };
+    }
+    return null;
 }
 
 export interface ResolveOptions { now?: number }
@@ -420,7 +481,7 @@ function isStale(runtime: OptimizerRuntime, now: number): boolean {
     return Number.isFinite(updated) && now - updated > STALE_PENDING_MS;
 }
 
-function resolveSnapshot(snapshot: RuntimeSnapshot, runtime: OptimizerRuntime, now: number): Pick<ResolvedContext, 'model' | 'requestedModel' | 'effort' | 'pending' | 'stale' | 'answered' | 'substitution' | 'configured'> {
+function resolveSnapshot(snapshot: RuntimeSnapshot, runtime: OptimizerRuntime, now: number, loop: string): Omit<ResolvedContext, 'kind' | 'agent' | 'label' | 'nativeMain'> {
     const { claudeCode, authorized, step } = snapshot;
     const fallbackModel = authorized?.model ?? claudeCode.model;
     const requestedModel = step?.requested.model ?? fallbackModel;
@@ -439,7 +500,8 @@ function resolveSnapshot(snapshot: RuntimeSnapshot, runtime: OptimizerRuntime, n
         stale: pending && isStale(runtime, now),
         answered,
         substitution,
-        configured: step === null
+        configured: step === null,
+        change: substitution ? null : recentChange(runtime, loop, model, now)
     };
 }
 
@@ -449,7 +511,7 @@ export function resolveAgent(runtime: OptimizerRuntime, agent: RuntimeAgent, opt
         agent,
         label: agent.label,
         nativeMain: false,
-        ...resolveSnapshot(agent, runtime, options.now ?? Date.now())
+        ...resolveSnapshot(agent, runtime, options.now ?? Date.now(), agent.id)
     };
 }
 
@@ -466,7 +528,7 @@ export function resolveContext(runtime: OptimizerRuntime, options: ResolveOption
         agent: null,
         label: null,
         nativeMain: runtime.workflow?.execution !== 'optimizer',
-        ...resolveSnapshot(runtime.lead, runtime, options.now ?? Date.now())
+        ...resolveSnapshot(runtime.lead, runtime, options.now ?? Date.now(), 'lead')
     };
 }
 

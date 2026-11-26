@@ -165,12 +165,12 @@
     "strategies": [
       {
         "name": "independent-review",
-        "support": "guided",
+        "support": "inherent",
         "state": "active"
       },
       {
         "name": "iterative-refinement",
-        "support": "guided",
+        "support": "inherent",
         "state": "active"
       }
     ],

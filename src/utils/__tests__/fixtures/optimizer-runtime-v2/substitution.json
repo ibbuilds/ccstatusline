@@ -70,7 +70,7 @@
     "strategies": [
       {
         "name": "parallel",
-        "support": "guided",
+        "support": "enforced",
         "state": "authorized"
       }
     ],

@@ -20,7 +20,6 @@ import {
 import {
     agentAt,
     loadRuntimeFixture,
-    must,
     stepOf
 } from '../../utils/__tests__/optimizer-runtime-fixtures';
 import { parseOptimizerRuntime } from '../../utils/optimizer-runtime';
@@ -112,24 +111,25 @@ describe('status line with CC Optimizer runtime', () => {
             'Opus 5.5 | medium | Orchestrator | Waiting for workers · Parallel | Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium');
     });
 
-    it('lead transition Opus to Sonnet', () => {
-        const before = render(LINE, SONNET, fixture('orchestrator-planning'));
-        const raw = loadRuntimeFixture('orchestrator-planning');
-        raw.updatedAt = '2026-11-24T10:00:20.000Z';
-        raw.lead.authorized = { model: 'claude-sonnet-5-5', effort: 'medium' };
-        raw.lead.step = {
-            id: 'turn1:1',
-            at: '2026-11-24T10:00:20.000Z',
-            requested: { model: 'claude-sonnet-5-5', effort: 'medium' },
-            observed: { model: 'claude-sonnet-5-5', at: '2026-11-24T10:00:21.000Z' },
-            state: 'answered'
-        };
-        raw.activity = { stage: 'working', since: '2026-11-24T10:00:20.000Z', detail: null };
-        must(raw.composition).strategies = [{ name: 'plan-execute', support: 'guided', state: 'active' }];
-        const after = render(LINE, SONNET, parse(raw));
+    it('main model transition: Direct plan-switch hands the lead to Sonnet and names who changed it, then shows the model alone', () => {
+        setNow('2026-11-24T10:00:10.000Z');
+        check('main model transition', render(LINE, OPUS, fixture('direct-plan-switch')),
+            'Sonnet 5.5 (from Opus 5.5 · CC Optimizer) | medium | Direct | Working');
 
-        expect(before.startsWith('Opus (pending) | high')).toBe(true);
-        check('lead transition Opus to Sonnet', after, 'Sonnet 5.5 | medium | Orchestrator | Working · Plan–Execute');
+        setNow('2026-11-24T10:01:10.000Z');
+        check('main model transition, a minute later', render(LINE, OPUS, fixture('direct-plan-switch')),
+            'Sonnet 5.5 | medium | Direct | Working');
+    });
+
+    it('a change of effort alone, or by the provider, adds no transition marker', () => {
+        setNow('2026-11-24T10:00:12.000Z');
+        expect(render(LINE, OPUS, fixture('orchestrator-workers')).startsWith('Opus 5.5 | medium |')).toBe(true);
+        expect(render(LINE, OPUS, fixture('substitution')).startsWith('Sonnet 5.5 (asked Opus 5.5) | high')).toBe(true);
+    });
+
+    it('a completed worker leaves the active agents; the running one stays', () => {
+        check('worker completed', render(LINE, OPUS, fixture('worker-completed')),
+            'Opus 5.5 | medium | Orchestrator | Waiting for workers | Implementer 1 — Sonnet 5.5 medium');
     });
 
     it('Opus critic reviewing: the lead and the critic each show their own', () => {
@@ -170,6 +170,29 @@ describe('status line with CC Optimizer runtime', () => {
         expect(parseOptimizerRuntime(raw, 'other-session')).toBeNull();
         expect(parseOptimizerRuntime({ ...raw, endedAt: '2026-11-24T10:05:00.000Z' }, 'orchestrator-session')).toBeNull();
         expect(render(LINE, OPUS, parseOptimizerRuntime('garbage', 'orchestrator-session'))).toBe('Opus 5.5 | medium');
+    });
+});
+
+describe('independent widgets', () => {
+    const only = (type: string): WidgetItem[] => [{ id: type, type, rawValue: true }];
+
+    it('each CC Optimizer widget renders alone, and in any order', () => {
+        const runtime = fixture('orchestrator-workers');
+
+        expect(render(only('optimizer-workflow'), OPUS, runtime)).toBe('Orchestrator');
+        expect(render(only('optimizer-activity'), OPUS, runtime)).toBe('Waiting for workers');
+        expect(render([{ id: 'a', type: 'optimizer-activity', rawValue: true, metadata: { strategies: 'active' } }], OPUS, runtime)).toBe('Waiting for workers · Parallel');
+        expect(render(only('optimizer-agents'), OPUS, runtime)).toBe('2');
+        expect(render([{ id: 'g', type: 'optimizer-agents', rawValue: true, metadata: { format: 'detailed' } }], OPUS, runtime)).toBe('Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium');
+        expect(render([...LINE].reverse(), OPUS, runtime)).toBe(
+            'Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium | Waiting for workers · Parallel | Orchestrator | medium | Opus 5.5'
+        );
+    });
+
+    it('a CC Optimizer widget without a runtime file draws nothing', () => {
+        for (const type of ['optimizer-workflow', 'optimizer-activity', 'optimizer-agents']) {
+            expect(render(only(type), OPUS, null)).toBe('');
+        }
     });
 });
 

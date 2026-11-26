@@ -61,6 +61,9 @@ export function formatContextModel(ctx: ResolvedContext, markers: ModelMarkers =
         if (ctx.configured) {
             return `${name} (configured)`;
         }
+        if (ctx.change) {
+            return `${name} (from ${formatModelName(ctx.change.from)} · ${ctx.change.source})`;
+        }
     }
 
     return name;
