@@ -24,11 +24,11 @@ import {
 } from './utils/git-review-cache';
 import { handleHookInput } from './utils/hook-handler';
 import { getTranscriptAnalysis } from './utils/jsonl';
-import { readOptimizerRuntime } from './utils/optimizer-runtime';
 import {
     getDefaultMcpConfigOptions,
     getMcpStatus
 } from './utils/mcp-status';
+import { readOptimizerRuntime } from './utils/optimizer-runtime';
 import { advanceGlobalPowerlineThemeIndex } from './utils/powerline-theme-index';
 import {
     buildConfigWarningBadge,
