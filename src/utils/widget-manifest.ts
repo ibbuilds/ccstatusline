@@ -105,6 +105,7 @@ export const WIDGET_MANIFEST: WidgetManifestEntry[] = [
     { type: 'weekly-reset-timer', create: () => new widgets.WeeklyResetTimerWidget() },
     { type: 'context-bar', create: () => new widgets.ContextBarWidget() },
     { type: 'skills', create: () => new widgets.SkillsWidget() },
+    { type: 'mcp-status', create: () => new widgets.McpStatusWidget() },
     { type: 'thinking-effort', create: () => new widgets.ThinkingEffortWidget() },
     { type: 'vim-mode', create: () => new widgets.VimModeWidget() },
     { type: 'voice-status', create: () => new widgets.VoiceStatusWidget() },

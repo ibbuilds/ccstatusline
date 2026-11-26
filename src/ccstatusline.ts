@@ -25,6 +25,10 @@ import {
 import { handleHookInput } from './utils/hook-handler';
 import { getTranscriptAnalysis } from './utils/jsonl';
 import { readOptimizerRuntime } from './utils/optimizer-runtime';
+import {
+    getDefaultMcpConfigOptions,
+    getMcpStatus
+} from './utils/mcp-status';
 import { advanceGlobalPowerlineThemeIndex } from './utils/powerline-theme-index';
 import {
     buildConfigWarningBadge,
@@ -130,6 +134,7 @@ async function renderMultipleLines(data: StatusJSON, rawData: Record<string, unk
     const speedWidgetTypes = new Set(['output-speed', 'input-speed', 'total-speed']);
     const hasSpeedItems = lines.some(line => line.some(item => speedWidgetTypes.has(item.type)));
     const hasCompactionWidget = lines.some(line => line.some(item => item.type === 'compaction-counter'));
+    const hasMcpStatusWidget = lines.some(line => line.some(item => item.type === 'mcp-status'));
     const hasThinkingEffortWidget = lines.some(line => line.some(item => item.type === 'thinking-effort'));
     const needsOptimizerRuntime = lines.some(line => line.some(item => OPTIMIZER_RUNTIME_WIDGET_TYPES.has(item.type)));
     const hasSessionNameWidget = lines.some(line => line.some(item => item.type === 'session-name'));
@@ -153,7 +158,8 @@ async function renderMultipleLines(data: StatusJSON, rawData: Record<string, unk
             speedWindowSeconds: Array.from(requestedSpeedWindows),
             includeCompactionStats: hasCompactionWidget,
             includeThinkingEffort: needsTranscriptThinkingEffort,
-            includeSessionName: hasSessionNameWidget
+            includeSessionName: hasSessionNameWidget,
+            includeMcpSession: hasMcpStatusWidget
         })
         : Promise.resolve(null);
     const [transcriptAnalysis, usageData, claudeStatusData, accountEmail] = await Promise.all([
@@ -178,6 +184,13 @@ async function renderMultipleLines(data: StatusJSON, rawData: Record<string, unk
         ? (transcriptAnalysis?.compactionData ?? ZERO_COMPACTION_STATS)
         : null;
 
+    const mcpStatus = hasMcpStatusWidget
+        ? getMcpStatus(
+            transcriptAnalysis?.mcpSession ?? null,
+            getDefaultMcpConfigOptions(data.workspace?.project_dir ?? data.cwd ?? data.workspace?.current_dir, data.session_id)
+        )
+        : null;
+
     // Create render context
     const context: RenderContext = {
         data,
@@ -199,6 +212,7 @@ async function renderMultipleLines(data: StatusJSON, rawData: Record<string, unk
         skillsMetrics,
         compactionData,
         optimizerRuntime: needsOptimizerRuntime ? readOptimizerRuntime(data.session_id) : undefined,
+        mcpStatus,
         terminalWidth: getTerminalWidth({
             sessionId: data.session_id,
             ttlSeconds: settings.terminalWidthCacheTtlSeconds
