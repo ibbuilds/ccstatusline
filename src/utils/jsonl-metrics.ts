@@ -28,6 +28,11 @@ import {
     type ResolvedThinkingEffort
 } from './jsonl-metadata';
 import { getSessionNameFromRecord } from './jsonl-session';
+import {
+    accumulateMcpSessionRecord,
+    createMcpSessionState,
+    type McpSessionState
+} from './mcp-status';
 
 export interface SpeedMetricsCollection {
     sessionAverage: SpeedMetrics;
@@ -42,6 +47,7 @@ export interface TranscriptAnalysisOptions {
     includeCompactionStats?: boolean;
     includeThinkingEffort?: boolean;
     includeSessionName?: boolean;
+    includeMcpSession?: boolean;
 }
 
 export interface TranscriptAnalysis {
@@ -51,6 +57,7 @@ export interface TranscriptAnalysis {
     compactionData: CompactionData | null;
     thinkingEffort: ResolvedThinkingEffort | undefined;
     sessionName: string | null;
+    mcpSession: McpSessionState | null;
 }
 
 interface TranscriptScanOptions extends TranscriptAnalysisOptions { includeTokenMetrics?: boolean }
@@ -62,6 +69,7 @@ interface TranscriptScanResult {
     compactionData: CompactionData | null;
     thinkingEffort: ResolvedThinkingEffort | undefined;
     sessionName: string | null;
+    mcpSession: McpSessionState | null;
 }
 
 interface SpeedInterval {
@@ -622,7 +630,8 @@ function createEmptyScanResult(options: TranscriptScanOptions, speedWindows: num
             : null,
         compactionData: options.includeCompactionStats ? createCompactionStats() : null,
         thinkingEffort: undefined,
-        sessionName: null
+        sessionName: null,
+        mcpSession: null
     };
 }
 
@@ -636,6 +645,7 @@ async function scanTranscript(transcriptPath: string, options: TranscriptScanOpt
     const tokenState = options.includeTokenMetrics ? createTokenMetricState() : null;
     const speedState = options.includeSpeedMetrics ? createSpeedMetricCollector() : null;
     const compactionData = options.includeCompactionStats ? createCompactionStats() : null;
+    const mcpSession = options.includeMcpSession ? createMcpSessionState() : null;
     const referencedAgentIds = options.includeSpeedMetrics && options.includeSubagents
         ? new Set<string>()
         : null;
@@ -668,6 +678,9 @@ async function scanTranscript(transcriptPath: string, options: TranscriptScanOpt
             }
             if (compactionData) {
                 accumulateCompactionStats(compactionData, data);
+            }
+            if (mcpSession) {
+                accumulateMcpSessionRecord(mcpSession, data);
             }
             if (options.includeThinkingEffort) {
                 const update = getThinkingEffortUpdate(data);
@@ -710,7 +723,8 @@ async function scanTranscript(transcriptPath: string, options: TranscriptScanOpt
             speedMetricsCollection,
             compactionData,
             thinkingEffort,
-            sessionName: sessionName ?? automaticTitle
+            sessionName: sessionName ?? automaticTitle,
+            mcpSession
         };
     } catch {
         return emptyResult;
@@ -783,6 +797,7 @@ export async function getTranscriptAnalysis(
         speedMetricsCollection: result.speedMetricsCollection,
         compactionData: result.compactionData,
         thinkingEffort: result.thinkingEffort,
-        sessionName: result.sessionName
+        sessionName: result.sessionName,
+        mcpSession: result.mcpSession
     };
 }

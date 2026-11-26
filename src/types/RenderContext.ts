@@ -2,6 +2,7 @@ import type {
     BlockMetrics,
     SkillsMetrics
 } from '../types';
+import type { McpStatusData } from '../utils/mcp-status';
 
 import type { AccountEmailResult } from './AccountEmail';
 import type { OptimizerRuntime } from './OptimizerRuntime';
@@ -74,6 +75,7 @@ export interface RenderContext {
     blockMetrics?: BlockMetrics | null;
     skillsMetrics?: SkillsMetrics | null;
     compactionData?: CompactionData | null;
+    mcpStatus?: McpStatusData | null;
     terminalWidth?: number | null;
     isPreview?: boolean;
     minimalist?: boolean;
