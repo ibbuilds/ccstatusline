@@ -1,0 +1,123 @@
+{
+  "version": 2,
+  "session": "orchestrator-session",
+  "updatedAt": "2026-11-24T10:00:01.000Z",
+  "endedAt": null,
+  "startedAt": "2026-11-24T10:00:00.000Z",
+  "workflow": {
+    "name": "orchestrator",
+    "source": "config",
+    "why": "configured",
+    "execution": "optimizer",
+    "pick": null
+  },
+  "profile": "balanced",
+  "stage": "plan",
+  "lead": {
+    "configured": {
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    "requested": {
+      "model": "opus",
+      "effort": "high"
+    },
+    "observed": {
+      "model": null,
+      "at": null
+    },
+    "pinned": {
+      "model": false,
+      "effort": false
+    },
+    "changedBy": "orchestrator",
+    "claudeCode": {
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    "authorized": {
+      "model": "opus",
+      "effort": "high"
+    },
+    "step": {
+      "id": "turn1:0",
+      "at": "2026-11-24T10:00:01.000Z",
+      "requested": {
+        "model": "opus",
+        "effort": "high"
+      },
+      "observed": {
+        "model": null,
+        "at": null
+      },
+      "state": "pending"
+    }
+  },
+  "agents": [],
+  "view": null,
+  "activity": {
+    "stage": "planning",
+    "detail": null,
+    "since": "2026-11-24T10:00:01.000Z"
+  },
+  "advisor": {
+    "lead": 0,
+    "agents": 0,
+    "lastAt": null
+  },
+  "composition": {
+    "methodology": "orchestrator",
+    "strategies": [
+      {
+        "name": "plan-execute",
+        "support": "guided",
+        "state": "active"
+      },
+      {
+        "name": "parallel",
+        "support": "guided",
+        "state": "authorized"
+      },
+      {
+        "name": "independent-review",
+        "support": "guided",
+        "state": "authorized"
+      }
+    ],
+    "alias": null
+  },
+  "resources": {
+    "reasoning": "opus:high",
+    "critic": "opus:medium",
+    "execution": "sonnet:medium",
+    "lookup": "sonnet:low"
+  },
+  "native": {
+    "advisor": {
+      "state": "off",
+      "model": null
+    },
+    "teams": {
+      "state": "off",
+      "members": 0,
+      "why": null
+    }
+  },
+  "pipeline": null,
+  "verification": {
+    "state": "none",
+    "at": null
+  },
+  "modelChanges": [
+    {
+      "at": "2026-11-24T10:00:01.000Z",
+      "agent": "lead",
+      "role": "lead",
+      "from": "claude-sonnet-5-5",
+      "to": "opus",
+      "source": "optimizer",
+      "reason": "orchestrator sets the lead; effort medium → high"
+    }
+  ],
+  "effortNote": "effort is configured or requested; the API does not report the effort it applied"
+}

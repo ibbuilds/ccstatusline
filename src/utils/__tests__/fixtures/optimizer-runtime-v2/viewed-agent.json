@@ -1,0 +1,221 @@
+{
+  "version": 2,
+  "session": "orchestrator-session",
+  "updatedAt": "2026-11-24T10:00:10.000Z",
+  "endedAt": null,
+  "startedAt": "2026-11-24T10:00:00.000Z",
+  "workflow": {
+    "name": "orchestrator",
+    "source": "config",
+    "why": "configured",
+    "execution": "optimizer",
+    "pick": null
+  },
+  "profile": "balanced",
+  "stage": "execute",
+  "lead": {
+    "configured": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "requested": {
+      "model": null,
+      "effort": null
+    },
+    "observed": {
+      "model": "claude-opus-5-5",
+      "at": "2026-11-24T10:00:04.000Z"
+    },
+    "pinned": {
+      "model": false,
+      "effort": false
+    },
+    "changedBy": null,
+    "claudeCode": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "authorized": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "step": {
+      "id": "turn1:1",
+      "at": "2026-11-24T10:00:03.000Z",
+      "requested": {
+        "model": "claude-opus-5-5",
+        "effort": "medium"
+      },
+      "observed": {
+        "model": "claude-opus-5-5",
+        "at": "2026-11-24T10:00:04.000Z"
+      },
+      "state": "answered"
+    }
+  },
+  "agents": [
+    {
+      "id": "w1",
+      "label": "Implementer 1",
+      "role": "implementer",
+      "kind": "optimizer",
+      "parentId": null,
+      "status": "running",
+      "responsibility": "role:implementer",
+      "modelSource": "role",
+      "claudeCode": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "authorized": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "step": {
+        "id": "w1:1",
+        "at": "2026-11-24T10:00:09.000Z",
+        "requested": {
+          "model": "claude-sonnet-5-5",
+          "effort": "medium"
+        },
+        "observed": {
+          "model": null,
+          "at": null
+        },
+        "state": "pending"
+      },
+      "configured": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "requested": {
+        "model": null,
+        "effort": null
+      },
+      "observed": {
+        "model": "claude-sonnet-5-5",
+        "at": "2026-11-24T10:00:08.000Z"
+      },
+      "steps": 1,
+      "startedAt": "2026-11-24T10:00:05.000Z",
+      "lastAt": "2026-11-24T10:00:09.000Z",
+      "endedAt": null
+    },
+    {
+      "id": "w2",
+      "label": "Implementer 2",
+      "role": "implementer",
+      "kind": "optimizer",
+      "parentId": null,
+      "status": "running",
+      "responsibility": "role:implementer",
+      "modelSource": "role",
+      "claudeCode": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "authorized": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "step": {
+        "id": "w2:0",
+        "at": "2026-11-24T10:00:07.000Z",
+        "requested": {
+          "model": "claude-sonnet-5-5",
+          "effort": "medium"
+        },
+        "observed": {
+          "model": null,
+          "at": null
+        },
+        "state": "pending"
+      },
+      "configured": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "requested": {
+        "model": null,
+        "effort": null
+      },
+      "observed": {
+        "model": null,
+        "at": null
+      },
+      "steps": 0,
+      "startedAt": "2026-11-24T10:00:06.000Z",
+      "lastAt": "2026-11-24T10:00:07.000Z",
+      "endedAt": null
+    }
+  ],
+  "view": {
+    "agentId": "w1",
+    "at": "2026-11-24T10:00:10.000Z"
+  },
+  "activity": {
+    "stage": "waiting-for-workers",
+    "detail": "2 running",
+    "since": "2026-11-24T10:00:10.000Z"
+  },
+  "advisor": {
+    "lead": 0,
+    "agents": 0,
+    "lastAt": null
+  },
+  "composition": {
+    "methodology": "orchestrator",
+    "strategies": [
+      {
+        "name": "plan-execute",
+        "support": "guided",
+        "state": "authorized"
+      },
+      {
+        "name": "parallel",
+        "support": "guided",
+        "state": "active"
+      },
+      {
+        "name": "independent-review",
+        "support": "guided",
+        "state": "authorized"
+      }
+    ],
+    "alias": null
+  },
+  "resources": {
+    "reasoning": "opus:high",
+    "critic": "opus:medium",
+    "execution": "sonnet:medium",
+    "lookup": "sonnet:low"
+  },
+  "native": {
+    "advisor": {
+      "state": "off",
+      "model": null
+    },
+    "teams": {
+      "state": "off",
+      "members": 0,
+      "why": null
+    }
+  },
+  "pipeline": null,
+  "verification": {
+    "state": "none",
+    "at": null
+  },
+  "modelChanges": [
+    {
+      "at": "2026-11-24T10:00:03.000Z",
+      "agent": "lead",
+      "role": "lead",
+      "from": "claude-opus-5-5",
+      "to": "claude-opus-5-5",
+      "source": "claude-code",
+      "reason": "plan → execute; effort high → medium"
+    }
+  ],
+  "effortNote": "effort is configured or requested; the API does not report the effort it applied"
+}
