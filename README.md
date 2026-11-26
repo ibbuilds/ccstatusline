@@ -451,6 +451,7 @@ Across the updates since the September 3 release, 64 PRs have been incorporated,
 - **📐 Multi-line Support** - Configure multiple independent status lines
 - **🖥️ Interactive TUI** - Built-in configuration interface using React/Ink
 - **🔎 Fast Widget Picker** - Add/change widgets by category with search and ranked matching
+- **🧭 CC Optimizer aware (optional)** - Model and Thinking Effort follow the lead or viewed agent when CC Optimizer is running, and the Optimizer Workflow, Optimizer Activity and Optimizer Agents widgets show the workflow, stage and agents. Without CC Optimizer nothing changes; see [Usage](docs/USAGE.md#cc-optimizer-optional).
 - **⚙️ Global Options** - Apply consistent formatting across all widgets (padding, separators, bold, minimalist mode, and color overrides)
 - **📦 Portable Configurations** - Export settings to JSON and preview replace-or-merge imports for backups and sharing
 - **🚀 Cross-platform** - Works seamlessly with both Bun and Node.js
