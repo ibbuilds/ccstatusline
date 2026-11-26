@@ -101,3 +101,6 @@ export { CacheMissesWidget } from './CacheMisses';
 export { LastCacheMissWidget } from './LastCacheMiss';
 export { CacheMissTokensWidget } from './CacheMissTokens';
 export { CacheIfColdWidget } from './CacheIfCold';
+export { OptimizerWorkflowWidget } from './OptimizerWorkflow';
+export { OptimizerActivityWidget } from './OptimizerActivity';
+export { OptimizerAgentsWidget } from './OptimizerAgents';
