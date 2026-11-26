@@ -1,0 +1,113 @@
+{
+  "version": 2,
+  "session": "direct-session",
+  "updatedAt": "2026-11-24T10:00:04.000Z",
+  "endedAt": null,
+  "startedAt": "2026-11-24T10:00:00.000Z",
+  "workflow": {
+    "name": "direct",
+    "source": "config",
+    "why": "configured",
+    "execution": "optimizer",
+    "pick": null
+  },
+  "profile": "balanced",
+  "stage": "execute",
+  "lead": {
+    "configured": {
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "requested": {
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    "observed": {
+      "model": "claude-sonnet-5-5",
+      "at": "2026-11-24T10:00:04.000Z"
+    },
+    "pinned": {
+      "model": false,
+      "effort": false
+    },
+    "changedBy": "orchestrator",
+    "claudeCode": {
+      "model": "claude-opus-5-5",
+      "effort": "high"
+    },
+    "authorized": {
+      "model": "claude-sonnet-5-5",
+      "effort": "medium"
+    },
+    "step": {
+      "id": "turn1:1",
+      "at": "2026-11-24T10:00:03.000Z",
+      "requested": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "observed": {
+        "model": "claude-sonnet-5-5",
+        "at": "2026-11-24T10:00:04.000Z"
+      },
+      "state": "answered"
+    }
+  },
+  "agents": [],
+  "view": null,
+  "activity": {
+    "stage": "working",
+    "detail": null,
+    "since": "2026-11-24T10:00:04.000Z"
+  },
+  "advisor": {
+    "lead": 0,
+    "agents": 0,
+    "lastAt": null
+  },
+  "composition": {
+    "methodology": "direct",
+    "strategies": [
+      {
+        "name": "plan-switch",
+        "support": "enforced",
+        "state": "authorized"
+      }
+    ],
+    "alias": null
+  },
+  "resources": {
+    "reasoning": "opus:high",
+    "critic": "opus:medium",
+    "execution": "sonnet:medium",
+    "lookup": "sonnet:low"
+  },
+  "native": {
+    "advisor": {
+      "state": "off",
+      "model": null
+    },
+    "teams": {
+      "state": "off",
+      "members": 0,
+      "why": null
+    }
+  },
+  "pipeline": null,
+  "verification": {
+    "state": "none",
+    "at": null
+  },
+  "modelChanges": [
+    {
+      "at": "2026-11-24T10:00:03.000Z",
+      "agent": "lead",
+      "role": "lead",
+      "from": "claude-opus-5-5",
+      "to": "claude-sonnet-5-5",
+      "source": "optimizer",
+      "reason": "plan → execute; effort high → medium"
+    }
+  ],
+  "effortNote": "effort is configured or requested; the API does not report the effort it applied"
+}

@@ -119,7 +119,10 @@ export const WIDGET_MANIFEST: WidgetManifestEntry[] = [
     { type: 'cache-misses', create: () => new widgets.CacheMissesWidget() },
     { type: 'last-cache-miss', create: () => new widgets.LastCacheMissWidget() },
     { type: 'cache-miss-tokens', create: () => new widgets.CacheMissTokensWidget() },
-    { type: 'cache-if-cold', create: () => new widgets.CacheIfColdWidget() }
+    { type: 'cache-if-cold', create: () => new widgets.CacheIfColdWidget() },
+    { type: 'optimizer-workflow', create: () => new widgets.OptimizerWorkflowWidget() },
+    { type: 'optimizer-activity', create: () => new widgets.OptimizerActivityWidget() },
+    { type: 'optimizer-agents', create: () => new widgets.OptimizerAgentsWidget() }
 ];
 
 export const LAYOUT_WIDGET_MANIFEST: LayoutWidgetManifestEntry[] = [

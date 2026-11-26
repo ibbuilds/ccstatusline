@@ -32,6 +32,13 @@ import {
     isLevelColorsEnabled,
     type EffortDisplay
 } from './shared/effort-style';
+import {
+    RUNTIME_KEYBIND,
+    TOGGLE_RUNTIME_ACTION,
+    getResolvedRuntimeContext,
+    getRuntimeModifier,
+    toggleRuntimeAware
+} from './shared/optimizer-display';
 
 const CYCLE_BRACKETS_ACTION = 'cycle-brackets';
 
@@ -57,7 +64,30 @@ function resolveThinkingEffortFromSettings(): ResolvedThinkingEffort | undefined
     return undefined;
 }
 
-function resolveThinkingEffort(context: RenderContext): ResolvedThinkingEffort | null {
+// CC Optimizer's runtime file names the effort of the context on screen, from the
+// same step as the Model widget's model. Claude Code's own payload stays
+// authoritative for the main conversation under native execution, and an agent
+// never borrows the lead's effort.
+function resolveThinkingEffortFromRuntime(item: WidgetItem, context: RenderContext): ResolvedThinkingEffort | null | undefined {
+    const resolved = getResolvedRuntimeContext(item, context);
+    if (!resolved || resolved.nativeMain) {
+        return undefined;
+    }
+
+    const effort = normalizeThinkingEffort(resolved.effort ?? undefined);
+    if (effort) {
+        return effort;
+    }
+
+    return resolved.kind === 'agent' ? null : undefined;
+}
+
+function resolveThinkingEffort(item: WidgetItem, context: RenderContext): ResolvedThinkingEffort | null {
+    const runtimeEffort = resolveThinkingEffortFromRuntime(item, context);
+    if (runtimeEffort !== undefined) {
+        return runtimeEffort;
+    }
+
     const statusEffort = resolveThinkingEffortFromStatusJson(context);
     if (statusEffort !== undefined) {
         return statusEffort;
@@ -83,7 +113,7 @@ function toEffortDisplay(resolved: ResolvedThinkingEffort | null): EffortDisplay
 
 export class ThinkingEffortWidget implements Widget {
     getDefaultColor(): string { return THINKING_EFFORT_DEFAULT_COLOR; }
-    getDescription(): string { return 'Displays the current thinking effort level (low, medium, high, xhigh, max).\nClaude Code reports Ultracode as xhigh in status line data; Ultracode is not exposed as a separate effort level.\nUnknown levels are shown with a trailing "?" (e.g. "super-max?").\nMay be incorrect when multiple Claude Code sessions are running due to current Claude Code limitations.'; }
+    getDescription(): string { return 'Displays the current thinking effort level (low, medium, high, xhigh, max).\nClaude Code reports Ultracode as xhigh in status line data; Ultracode is not exposed as a separate effort level.\nUnknown levels are shown with a trailing "?" (e.g. "super-max?").\nMay be incorrect when multiple Claude Code sessions are running due to current Claude Code limitations.\nWith CC Optimizer running, shows the effort of the lead or the viewed agent.'; }
     getDisplayName(): string { return 'Thinking Effort'; }
     getCategory(): string { return 'Core'; }
     getLabelPrefix(): string { return THINKING_EFFORT_LABEL; }
@@ -96,6 +126,10 @@ export class ThinkingEffortWidget implements Widget {
         if (isLevelColorsEnabled(item)) {
             modifiers.push('level colors');
         }
+        const runtimeModifier = getRuntimeModifier(item);
+        if (runtimeModifier) {
+            modifiers.push(runtimeModifier);
+        }
 
         return { displayText: this.getDisplayName(), modifierText: makeModifierText(modifiers) };
     }
@@ -103,7 +137,7 @@ export class ThinkingEffortWidget implements Widget {
     render(item: WidgetItem, context: RenderContext, settings: Settings): string | null {
         const effort: EffortDisplay = context.isPreview
             ? { text: 'high', level: 'high' }
-            : toEffortDisplay(resolveThinkingEffort(context));
+            : toEffortDisplay(resolveThinkingEffort(item, context));
 
         return formatThinkingEffort(item, effort, {
             colorLevel: getColorLevelString(settings.colorLevel),
@@ -114,11 +148,16 @@ export class ThinkingEffortWidget implements Widget {
     getCustomKeybinds(): CustomKeybind[] {
         return [
             { key: 'b', label: '(b)rackets', action: CYCLE_BRACKETS_ACTION },
-            { key: 'l', label: '(l)evel colors', action: EDIT_LEVEL_COLORS_ACTION }
+            { key: 'l', label: '(l)evel colors', action: EDIT_LEVEL_COLORS_ACTION },
+            RUNTIME_KEYBIND
         ];
     }
 
     handleEditorAction(action: string, item: WidgetItem): WidgetItem | null {
+        if (action === TOGGLE_RUNTIME_ACTION) {
+            return toggleRuntimeAware(item);
+        }
+
         return action === CYCLE_BRACKETS_ACTION ? cycleBracketStyle(item) : null;
     }
 

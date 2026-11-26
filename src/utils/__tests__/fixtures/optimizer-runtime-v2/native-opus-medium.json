@@ -1,0 +1,114 @@
+{
+  "version": 2,
+  "session": "native-session",
+  "updatedAt": "2026-11-24T10:00:03.000Z",
+  "endedAt": null,
+  "startedAt": "2026-11-24T10:00:00.000Z",
+  "workflow": {
+    "name": "native",
+    "source": "config",
+    "why": "configured",
+    "execution": "native",
+    "pick": null
+  },
+  "profile": "balanced",
+  "stage": "execute",
+  "lead": {
+    "configured": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "requested": {
+      "model": null,
+      "effort": null
+    },
+    "observed": {
+      "model": "claude-opus-5-5",
+      "at": "2026-11-24T10:00:02.000Z"
+    },
+    "pinned": {
+      "model": false,
+      "effort": false
+    },
+    "changedBy": null,
+    "claudeCode": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "authorized": null,
+    "step": {
+      "id": "turn1:0",
+      "at": "2026-11-24T10:00:01.000Z",
+      "requested": {
+        "model": "claude-opus-5-5",
+        "effort": "medium"
+      },
+      "observed": {
+        "model": "claude-opus-5-5",
+        "at": "2026-11-24T10:00:02.000Z"
+      },
+      "state": "answered"
+    }
+  },
+  "agents": [
+    {
+      "id": "a1",
+      "label": "Find the config",
+      "role": "native",
+      "kind": "native",
+      "parentId": null,
+      "status": "running",
+      "responsibility": "lookup",
+      "modelSource": "claude-code",
+      "claudeCode": {
+        "model": null,
+        "effort": null
+      },
+      "authorized": null,
+      "step": null,
+      "configured": {
+        "model": null,
+        "effort": null
+      },
+      "requested": {
+        "model": null,
+        "effort": null
+      },
+      "observed": {
+        "model": null,
+        "at": null
+      },
+      "steps": 0,
+      "startedAt": "2026-11-24T10:00:03.000Z",
+      "lastAt": "2026-11-24T10:00:03.000Z",
+      "endedAt": null
+    }
+  ],
+  "view": null,
+  "activity": null,
+  "advisor": {
+    "lead": 0,
+    "agents": 0,
+    "lastAt": null
+  },
+  "composition": null,
+  "resources": null,
+  "native": {
+    "advisor": {
+      "state": "off",
+      "model": null
+    },
+    "teams": {
+      "state": "off",
+      "members": 0,
+      "why": null
+    }
+  },
+  "pipeline": null,
+  "verification": {
+    "state": "none",
+    "at": null
+  },
+  "modelChanges": [],
+  "effortNote": "effort is configured or requested; the API does not report the effort it applied"
+}

@@ -4,6 +4,7 @@ import type {
 } from '../types';
 
 import type { AccountEmailResult } from './AccountEmail';
+import type { OptimizerRuntime } from './OptimizerRuntime';
 import type { SessionForecast } from './SessionForecast';
 import type { SpeedMetrics } from './SpeedMetrics';
 import type { StatusJSON } from './StatusJSON';
@@ -67,6 +68,9 @@ export interface RenderContext {
     sessionDuration?: string | null;
     transcriptSessionName?: string | null;
     transcriptThinkingEffort?: { value: string; known: boolean } | null;
+    // CC Optimizer's runtime file for this session, read once per render. Undefined
+    // when no widget needs it; null when it is missing, malformed or not this session's.
+    optimizerRuntime?: OptimizerRuntime | null;
     blockMetrics?: BlockMetrics | null;
     skillsMetrics?: SkillsMetrics | null;
     compactionData?: CompactionData | null;

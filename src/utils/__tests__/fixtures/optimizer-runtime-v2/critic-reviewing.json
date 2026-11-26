@@ -1,0 +1,210 @@
+{
+  "version": 2,
+  "session": "critic-session",
+  "updatedAt": "2026-11-24T10:00:09.000Z",
+  "endedAt": null,
+  "startedAt": "2026-11-24T10:00:00.000Z",
+  "workflow": {
+    "name": "critic",
+    "source": "config",
+    "why": "configured",
+    "execution": "optimizer",
+    "pick": null
+  },
+  "profile": "balanced",
+  "stage": "execute",
+  "lead": {
+    "configured": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "requested": {
+      "model": null,
+      "effort": null
+    },
+    "observed": {
+      "model": "claude-opus-5-5",
+      "at": "2026-11-24T10:00:02.000Z"
+    },
+    "pinned": {
+      "model": false,
+      "effort": false
+    },
+    "changedBy": null,
+    "claudeCode": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "authorized": {
+      "model": "claude-opus-5-5",
+      "effort": "medium"
+    },
+    "step": {
+      "id": "turn1:0",
+      "at": "2026-11-24T10:00:01.000Z",
+      "requested": {
+        "model": "claude-opus-5-5",
+        "effort": "medium"
+      },
+      "observed": {
+        "model": "claude-opus-5-5",
+        "at": "2026-11-24T10:00:02.000Z"
+      },
+      "state": "answered"
+    }
+  },
+  "agents": [
+    {
+      "id": "g1",
+      "label": "Generator",
+      "role": "generator",
+      "kind": "optimizer",
+      "parentId": null,
+      "status": "completed",
+      "responsibility": "role:generator",
+      "modelSource": "role",
+      "claudeCode": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "authorized": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "step": {
+        "id": "g1:0",
+        "at": "2026-11-24T10:00:04.000Z",
+        "requested": {
+          "model": "claude-sonnet-5-5",
+          "effort": "medium"
+        },
+        "observed": {
+          "model": "claude-sonnet-5-5",
+          "at": "2026-11-24T10:00:05.000Z"
+        },
+        "state": "answered"
+      },
+      "configured": {
+        "model": "claude-sonnet-5-5",
+        "effort": "medium"
+      },
+      "requested": {
+        "model": null,
+        "effort": null
+      },
+      "observed": {
+        "model": "claude-sonnet-5-5",
+        "at": "2026-11-24T10:00:05.000Z"
+      },
+      "steps": 1,
+      "startedAt": "2026-11-24T10:00:03.000Z",
+      "lastAt": "2026-11-24T10:00:06.000Z",
+      "endedAt": "2026-11-24T10:00:06.000Z"
+    },
+    {
+      "id": "c1",
+      "label": "Critic",
+      "role": "critic",
+      "kind": "optimizer",
+      "parentId": null,
+      "status": "running",
+      "responsibility": "role:critic",
+      "modelSource": "role",
+      "claudeCode": {
+        "model": "claude-opus-5-5",
+        "effort": "medium"
+      },
+      "authorized": {
+        "model": "claude-opus-5-5",
+        "effort": "medium"
+      },
+      "step": {
+        "id": "c1:0",
+        "at": "2026-11-24T10:00:09.000Z",
+        "requested": {
+          "model": "claude-opus-5-5",
+          "effort": "medium"
+        },
+        "observed": {
+          "model": null,
+          "at": null
+        },
+        "state": "pending"
+      },
+      "configured": {
+        "model": "claude-opus-5-5",
+        "effort": "medium"
+      },
+      "requested": {
+        "model": null,
+        "effort": null
+      },
+      "observed": {
+        "model": null,
+        "at": null
+      },
+      "steps": 0,
+      "startedAt": "2026-11-24T10:00:08.000Z",
+      "lastAt": "2026-11-24T10:00:09.000Z",
+      "endedAt": null
+    }
+  ],
+  "view": null,
+  "activity": {
+    "stage": "reviewing",
+    "detail": "Critic",
+    "since": "2026-11-24T10:00:09.000Z"
+  },
+  "advisor": {
+    "lead": 0,
+    "agents": 0,
+    "lastAt": null
+  },
+  "composition": {
+    "methodology": "critic",
+    "strategies": [
+      {
+        "name": "independent-review",
+        "support": "inherent",
+        "state": "active"
+      },
+      {
+        "name": "iterative-refinement",
+        "support": "inherent",
+        "state": "active"
+      }
+    ],
+    "alias": null
+  },
+  "resources": {
+    "reasoning": "opus:high",
+    "critic": "opus:medium",
+    "execution": "sonnet:medium",
+    "lookup": "sonnet:low"
+  },
+  "native": {
+    "advisor": {
+      "state": "off",
+      "model": null
+    },
+    "teams": {
+      "state": "off",
+      "members": 0,
+      "why": null
+    }
+  },
+  "pipeline": {
+    "stage": "critique",
+    "visit": 2,
+    "candidates": null,
+    "iterations": 2,
+    "status": "failed",
+    "at": "2026-11-24T10:00:07.000Z"
+  },
+  "verification": {
+    "state": "none",
+    "at": null
+  },
+  "modelChanges": [],
+  "effortNote": "effort is configured or requested; the API does not report the effort it applied"
+}

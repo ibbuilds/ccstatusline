@@ -24,6 +24,7 @@ import {
 } from './utils/git-review-cache';
 import { handleHookInput } from './utils/hook-handler';
 import { getTranscriptAnalysis } from './utils/jsonl';
+import { readOptimizerRuntime } from './utils/optimizer-runtime';
 import { advanceGlobalPowerlineThemeIndex } from './utils/powerline-theme-index';
 import {
     buildConfigWarningBadge,
@@ -57,6 +58,9 @@ function hasSessionDurationInStatusJson(data: StatusJSON): boolean {
     const durationMs = data.cost?.total_duration_ms;
     return typeof durationMs === 'number' && Number.isFinite(durationMs) && durationMs >= 0;
 }
+
+// Widgets that read CC Optimizer's runtime file; it is read once per render, only when one is configured
+const OPTIMIZER_RUNTIME_WIDGET_TYPES = new Set(['model', 'thinking-effort', 'optimizer-workflow', 'optimizer-activity', 'optimizer-agents']);
 
 const DISPATCHABLE_HOOK_EVENT_NAMES = new Set(['PreToolUse', 'UserPromptSubmit']);
 
@@ -127,6 +131,7 @@ async function renderMultipleLines(data: StatusJSON, rawData: Record<string, unk
     const hasSpeedItems = lines.some(line => line.some(item => speedWidgetTypes.has(item.type)));
     const hasCompactionWidget = lines.some(line => line.some(item => item.type === 'compaction-counter'));
     const hasThinkingEffortWidget = lines.some(line => line.some(item => item.type === 'thinking-effort'));
+    const needsOptimizerRuntime = lines.some(line => line.some(item => OPTIMIZER_RUNTIME_WIDGET_TYPES.has(item.type)));
     const hasSessionNameWidget = lines.some(line => line.some(item => item.type === 'session-name'));
     const hasAccountEmailWidget = lines.some(line => line.some(item => item.type === 'claude-account-email'));
     const needsTranscriptThinkingEffort = hasThinkingEffortWidget
@@ -193,6 +198,7 @@ async function renderMultipleLines(data: StatusJSON, rawData: Record<string, unk
             : undefined,
         skillsMetrics,
         compactionData,
+        optimizerRuntime: needsOptimizerRuntime ? readOptimizerRuntime(data.session_id) : undefined,
         terminalWidth: getTerminalWidth({
             sessionId: data.session_id,
             ttlSeconds: settings.terminalWidthCacheTtlSeconds
