@@ -18,6 +18,7 @@ import {
     normalizeMcpServerName,
     readMcpConfig,
     readScopeHeld,
+    readScopeStatus,
     resolveMcpStatus,
     type McpConfigServer,
     type McpSessionState
@@ -321,6 +322,18 @@ describe('CC Optimizer MCP scope', () => {
         fs.writeFileSync(file, '{torn');
         expect(readScopeHeld(file)).toEqual([]);
         expect(readScopeHeld(undefined)).toEqual([]);
+    });
+
+    it('reads the scope and its held names from a version 1 file', () => {
+        const file = path.join(dir, 's.mcp.json');
+        expect(readScopeStatus(file)).toBeNull();
+        fs.writeFileSync(file, JSON.stringify({ version: 1, scope: 'project', held: ['u1', 3] }));
+        expect(readScopeStatus(file)).toEqual({ scope: 'project', held: ['u1'] });
+        fs.writeFileSync(file, JSON.stringify({ version: 1, scope: 'global', held: ['u1'] }));
+        expect(readScopeStatus(file)).toEqual({ scope: 'global', held: [] });
+        fs.writeFileSync(file, JSON.stringify({ version: 2, scope: 'project' }));
+        expect(readScopeStatus(file)).toBeNull();
+        expect(readScopeStatus(undefined)).toBeNull();
     });
 
     it('marks held servers, adds held connectors and keeps a server the session connected', () => {

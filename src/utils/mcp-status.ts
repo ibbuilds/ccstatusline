@@ -1,11 +1,20 @@
 import * as fs from 'node:fs';
-import * as os from 'node:os';
 import * as path from 'node:path';
 
 import {
     getClaudeConfigDir,
     getClaudeJsonPath
 } from './claude-settings';
+import {
+    getScopeStatusPath,
+    readScopeStatus
+} from './mcp-scope-status';
+
+export {
+    getScopeStatusPath,
+    readScopeStatus,
+    type McpScopeStatus
+} from './mcp-scope-status';
 
 /**
  * MCP server status for the MCP Status widget.
@@ -338,23 +347,9 @@ function getManagedSettingsPaths(): string[] {
     return ['/etc/claude-code/managed-settings.json'];
 }
 
-/** Where CC Optimizer writes a session's MCP scope status. */
-export function getScopeStatusPath(sessionId: string | undefined): string | undefined {
-    const id = (sessionId ?? '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 80);
-    if (!id) {
-        return undefined;
-    }
-    const dir = process.env.CC_OPTIMIZER_STATE_DIR ?? path.join(os.tmpdir(), 'cc-optimizer');
-    return path.join(dir, `${id}.mcp.json`);
-}
-
 /** Server names CC Optimizer held back from the session; empty when the file is absent or not version 1. */
 export function readScopeHeld(filePath: string | undefined): string[] {
-    if (!filePath) {
-        return [];
-    }
-    const file = readJsonObject(filePath);
-    return file?.version === 1 && file.scope === 'project' ? stringArray(file.held) : [];
+    return readScopeStatus(filePath)?.held ?? [];
 }
 
 /** Marks held servers; a server the session reported as connected keeps that state. */

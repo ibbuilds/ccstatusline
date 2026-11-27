@@ -51,20 +51,20 @@ function describeWorkflow(runtime: OptimizerRuntime, showAuto: boolean): string 
     }
 
     if (workflow.execution !== 'optimizer') {
-        return 'native';
+        return 'Native';
     }
 
     const methodLabel = getMethodLabel(workflow.name);
     const methodology = methodLabel ? workflow.name.toLowerCase() : (runtime.composition?.methodology ?? null);
     const text = `${methodLabel ?? workflow.name}${nativeFeatureSuffix(runtime, methodology)}`;
 
-    return showAuto && isAutomaticWorkflow(workflow) ? `${text} · auto` : text;
+    return showAuto && isAutomaticWorkflow(workflow) ? `${text} (auto)` : text;
 }
 
 export class OptimizerWorkflowWidget implements Widget {
     getDefaultColor(): string { return 'brightMagenta'; }
-    getDescription(): string { return 'Displays the workflow in use: native, a methodology (Direct, Orchestrator, Advisor, Critic, Best-of-N, Agent Teams) or a custom workflow name.\nHidden without it in this session.'; }
-    getDisplayName(): string { return 'Optimizer Workflow'; }
+    getDescription(): string { return 'CC Optimizer workflow in use: Native, a methodology (Direct, Advisor, Orchestrator, Critic, Best-of-N, Agent Teams) or a custom workflow name, with (auto) when automatic selection chose it.\nHidden without CC Optimizer in this session.'; }
+    getDisplayName(): string { return 'Workflow'; }
     getCategory(): string { return CATEGORY_OPTIMIZER; }
     getLabelPrefix(): string { return LABEL; }
     getEditorDisplay(item: WidgetItem): WidgetEditorDisplay {

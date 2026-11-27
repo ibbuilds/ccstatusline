@@ -116,6 +116,14 @@ describe('widget catalog', () => {
         expect(categories).toContain('Layout');
     });
 
+    it('groups every CC Optimizer widget, MCP included, in one category', () => {
+        const catalog = getWidgetCatalog(baseSettings);
+        const optimizer = catalog.filter(entry => entry.category === 'CC Optimizer').map(entry => entry.type);
+
+        expect(optimizer).toEqual(['optimizer-workflow', 'optimizer-activity', 'optimizer-agents', 'mcp-status', 'mcp-scope']);
+        expect(optimizer.map(type => getWidget(type)?.getDisplayName())).toEqual(['Workflow', 'Activity', 'Agents', 'MCP Status', 'MCP Scope']);
+    });
+
     it('returns runtime widget instances for non-layout widget types', () => {
         const runtimeTypes = getAllWidgetTypes(baseSettings).filter(
             type => type !== 'separator' && type !== 'flex-separator'

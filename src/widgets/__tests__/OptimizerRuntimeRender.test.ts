@@ -98,23 +98,23 @@ describe('status line with CC Optimizer runtime', () => {
 
     it('native Opus medium: payload model and effort, workflow native, no activity, native agents counted', () => {
         check('native Opus medium', render(LINE, OPUS, fixture('native-opus-medium')),
-            'Opus 5.5 | medium | native | Find the config');
+            'Opus 5.5 | medium | Native | Find the config');
     });
 
     it('orchestrator planning on Opus: the lead runs Opus although Claude Code reports Sonnet', () => {
         check('orchestrator planning', render(LINE, SONNET, fixture('orchestrator-planning')),
-            'Opus (pending) | high | Orchestrator | Planning · Plan–Execute');
+            'Opus (pending) | high | Orchestrator | Planning (Plan-Execute)');
     });
 
     it('several Sonnet workers under an Opus orchestrator: Model shows Opus, Agents the workers', () => {
         check('orchestrator with workers', render(LINE, OPUS, fixture('orchestrator-workers')),
-            'Opus 5.5 | medium | Orchestrator | Waiting for workers · Parallel | Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium');
+            'Opus 5.5 | medium | Orchestrator | Waiting for workers (Parallel) | Implementer ×2 (Sonnet 5.5 medium)');
     });
 
     it('main model transition: Direct plan-switch hands the lead to Sonnet and names who changed it, then shows the model alone', () => {
         setNow('2026-11-24T10:00:10.000Z');
         check('main model transition', render(LINE, OPUS, fixture('direct-plan-switch')),
-            'Sonnet 5.5 (from Opus 5.5 · CC Optimizer) | medium | Direct | Working');
+            'Sonnet 5.5 (from Opus 5.5 by CC Optimizer) | medium | Direct | Working');
 
         setNow('2026-11-24T10:01:10.000Z');
         check('main model transition, a minute later', render(LINE, OPUS, fixture('direct-plan-switch')),
@@ -129,24 +129,24 @@ describe('status line with CC Optimizer runtime', () => {
 
     it('a completed worker leaves the active agents; the running one stays', () => {
         check('worker completed', render(LINE, OPUS, fixture('worker-completed')),
-            'Opus 5.5 | medium | Orchestrator | Waiting for workers | Implementer 1 — Sonnet 5.5 medium');
+            'Opus 5.5 | medium | Orchestrator | Waiting for workers | Implementer 1 (Sonnet 5.5 medium)');
     });
 
     it('Opus critic reviewing: the lead and the critic each show their own', () => {
         check('critic reviewing', render(LINE, OPUS, fixture('critic-reviewing')),
-            'Opus 5.5 | medium | Critic | Reviewing · Independent review, Iterative refinement | Critic — Opus 5.5 medium');
+            'Opus 5.5 | medium | Critic | Reviewing (Review, Refine) | Critic (Opus 5.5 medium)');
     });
 
     it('viewed agent: Model and Thinking Effort show that agent, never the lead', () => {
         check('viewed agent', render(LINE, OPUS, fixture('viewed-agent')),
-            'Implementer 1: Sonnet 5.5 (pending) | medium | Orchestrator | Waiting for workers · Parallel | Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium');
+            'Implementer 1: Sonnet 5.5 (pending) | medium | Orchestrator | Waiting for workers (Parallel) | Implementer ×2 (Sonnet 5.5 medium)');
     });
 
     it('back to main after viewing an agent', () => {
         const raw = loadRuntimeFixture('viewed-agent');
         raw.view = { agentId: null, at: '2026-11-24T10:00:12.000Z' };
         check('back to main', render(LINE, OPUS, parse(raw)),
-            'Opus 5.5 | medium | Orchestrator | Waiting for workers · Parallel | Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium');
+            'Opus 5.5 | medium | Orchestrator | Waiting for workers (Parallel) | Implementer ×2 (Sonnet 5.5 medium)');
     });
 
     it('substitution: the served model is shown with the requested one', () => {
@@ -161,7 +161,7 @@ describe('status line with CC Optimizer runtime', () => {
 
         setNow('2026-11-24T10:20:00.000Z');
         check('stale pending', render(LINE, SONNET, fixture('orchestrator-planning')),
-            'Opus (stale) | high | Orchestrator | Planning · Plan–Execute');
+            'Opus (stale) | high | Orchestrator | Planning (Plan-Execute)');
     });
 
     it('runtime from another session, an ended session and a malformed file are all "no runtime"', () => {
@@ -181,11 +181,11 @@ describe('independent widgets', () => {
 
         expect(render(only('optimizer-workflow'), OPUS, runtime)).toBe('Orchestrator');
         expect(render(only('optimizer-activity'), OPUS, runtime)).toBe('Waiting for workers');
-        expect(render([{ id: 'a', type: 'optimizer-activity', rawValue: true, metadata: { strategies: 'active' } }], OPUS, runtime)).toBe('Waiting for workers · Parallel');
+        expect(render([{ id: 'a', type: 'optimizer-activity', rawValue: true, metadata: { strategies: 'active' } }], OPUS, runtime)).toBe('Waiting for workers (Parallel)');
         expect(render(only('optimizer-agents'), OPUS, runtime)).toBe('2');
-        expect(render([{ id: 'g', type: 'optimizer-agents', rawValue: true, metadata: { format: 'detailed' } }], OPUS, runtime)).toBe('Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium');
+        expect(render([{ id: 'g', type: 'optimizer-agents', rawValue: true, metadata: { format: 'detailed' } }], OPUS, runtime)).toBe('Implementer ×2 (Sonnet 5.5 medium)');
         expect(render([...LINE].reverse(), OPUS, runtime)).toBe(
-            'Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium | Waiting for workers · Parallel | Orchestrator | medium | Opus 5.5'
+            'Implementer ×2 (Sonnet 5.5 medium) | Waiting for workers (Parallel) | Orchestrator | medium | Opus 5.5'
         );
     });
 
@@ -306,7 +306,7 @@ describe('Optimizer widgets', () => {
         it('is hidden without a runtime and shows native, a methodology or a custom name', () => {
             expect(widget.render(item, context(null), SETTINGS)).toBeNull();
             expect(widget.render(item, context(undefined), SETTINGS)).toBeNull();
-            expect(widget.render(item, context(fixture('native-opus-medium')), SETTINGS)).toBe('Workflow: native');
+            expect(widget.render(item, context(fixture('native-opus-medium')), SETTINGS)).toBe('Workflow: Native');
             expect(widget.render(item, context(fixture('critic-reviewing')), SETTINGS)).toBe('Workflow: Critic');
 
             const custom = loadRuntimeFixture('orchestrator-workers');
@@ -319,7 +319,7 @@ describe('Optimizer widgets', () => {
             raw.workflow.source = 'request-auto';
             const runtime = parse(raw);
 
-            expect(widget.render(item, context(runtime), SETTINGS)).toBe('Workflow: Orchestrator · auto');
+            expect(widget.render(item, context(runtime), SETTINGS)).toBe('Workflow: Orchestrator (auto)');
             const toggled = widget.handleEditorAction('toggle-auto', item);
             expect(toggled?.metadata).toEqual({ hideAuto: 'true' });
             expect(widget.render(toggled ?? item, context(runtime), SETTINGS)).toBe('Workflow: Orchestrator');
@@ -374,8 +374,8 @@ describe('Optimizer widgets', () => {
             const all = widget.handleEditorAction('cycle-strategies', active ?? item);
 
             expect(widget.render(item, context(runtime), SETTINGS)).toBe('Planning');
-            expect(widget.render(active ?? item, context(runtime), SETTINGS)).toBe('Planning · Plan–Execute');
-            expect(widget.render(all ?? item, context(runtime), SETTINGS)).toBe('Planning · Plan–Execute, (Parallel), (Independent review)');
+            expect(widget.render(active ?? item, context(runtime), SETTINGS)).toBe('Planning (Plan-Execute)');
+            expect(widget.render(all ?? item, context(runtime), SETTINGS)).toBe('Planning (Plan-Execute; allowed Parallel, Review)');
             expect(widget.handleEditorAction('cycle-strategies', all ?? item)?.metadata).toBeUndefined();
         });
     });
@@ -408,9 +408,9 @@ describe('Optimizer widgets', () => {
             const runtime = parse(raw);
             const detailed: WidgetItem = { ...compact, metadata: { format: 'detailed' } };
 
-            expect(widget.render(detailed, context(runtime), SETTINGS)).toBe('Agents: Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium, Analyst — Opus high');
-            expect(widget.render({ ...detailed, metadata: { format: 'detailed', maxItems: '2' } }, context(runtime), SETTINGS))
-                .toBe('Agents: Implementer 1 — Sonnet 5.5 medium, Implementer 2 — Sonnet 5.5 medium +1');
+            expect(widget.render(detailed, context(runtime), SETTINGS)).toBe('Agents: Implementer ×2 (Sonnet 5.5 medium), Analyst (Opus high)');
+            expect(widget.render({ ...detailed, metadata: { format: 'detailed', maxItems: '1' } }, context(runtime), SETTINGS))
+                .toBe('Agents: Implementer ×2 (Sonnet 5.5 medium) +1');
         });
 
         it('includes native agents', () => {

@@ -105,7 +105,6 @@ export const WIDGET_MANIFEST: WidgetManifestEntry[] = [
     { type: 'weekly-reset-timer', create: () => new widgets.WeeklyResetTimerWidget() },
     { type: 'context-bar', create: () => new widgets.ContextBarWidget() },
     { type: 'skills', create: () => new widgets.SkillsWidget() },
-    { type: 'mcp-status', create: () => new widgets.McpStatusWidget() },
     { type: 'thinking-effort', create: () => new widgets.ThinkingEffortWidget() },
     { type: 'vim-mode', create: () => new widgets.VimModeWidget() },
     { type: 'voice-status', create: () => new widgets.VoiceStatusWidget() },
@@ -123,7 +122,9 @@ export const WIDGET_MANIFEST: WidgetManifestEntry[] = [
     { type: 'cache-if-cold', create: () => new widgets.CacheIfColdWidget() },
     { type: 'optimizer-workflow', create: () => new widgets.OptimizerWorkflowWidget() },
     { type: 'optimizer-activity', create: () => new widgets.OptimizerActivityWidget() },
-    { type: 'optimizer-agents', create: () => new widgets.OptimizerAgentsWidget() }
+    { type: 'optimizer-agents', create: () => new widgets.OptimizerAgentsWidget() },
+    { type: 'mcp-status', create: () => new widgets.McpStatusWidget() },
+    { type: 'mcp-scope', create: () => new widgets.McpScopeWidget() }
 ];
 
 export const LAYOUT_WIDGET_MANIFEST: LayoutWidgetManifestEntry[] = [
