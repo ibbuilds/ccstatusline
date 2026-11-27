@@ -62,7 +62,8 @@ export function formatContextModel(ctx: ResolvedContext, markers: ModelMarkers =
             return `${name} (configured)`;
         }
         if (ctx.change) {
-            return `${name} (from ${formatModelName(ctx.change.from)} · ${ctx.change.source})`;
+            const by = ctx.change.source === 'you' || ctx.change.source === 'unknown' ? '' : ` by ${ctx.change.source}`;
+            return `${name} (from ${formatModelName(ctx.change.from)}${by})`;
         }
     }
 

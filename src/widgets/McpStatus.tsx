@@ -210,7 +210,7 @@ export class McpStatusWidget implements Widget {
     }
 
     getDisplayName(): string { return 'MCP Status'; }
-    getCategory(): string { return 'Environment'; }
+    getCategory(): string { return 'CC Optimizer'; }
     getLabelPrefix(): string { return LABEL; }
     supportsRawValue(): boolean { return true; }
     supportsColors(): boolean { return true; }

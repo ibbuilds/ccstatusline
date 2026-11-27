@@ -59,21 +59,34 @@ function describeAgents(runtime: OptimizerRuntime, item: WidgetItem): string | n
         return 'none';
     }
 
-    const entries = active.slice(0, getMaxItems(item)).map((agent) => {
+    const groups: { label: string; base: string; detail: string; count: number }[] = [];
+    for (const agent of active) {
         const resolved = resolveAgent(runtime, agent);
         const model = formatContextModel(resolved, 'substitution');
         const detail = [model, resolved.effort].filter((part): part is string => Boolean(part)).join(' ');
-        return detail ? `${agent.label} — ${detail}` : agent.label;
+        const base = agent.label.replace(/\s+\d+$/, '');
+        const same = groups.find(group => group.base === base && group.detail === detail);
+        if (same) {
+            same.count += 1;
+        } else {
+            groups.push({ label: agent.label, base, detail, count: 1 });
+        }
+    }
+
+    const shown = groups.slice(0, getMaxItems(item));
+    const entries = shown.map((group) => {
+        const name = group.count > 1 ? `${group.base} ×${group.count}` : group.label;
+        return group.detail ? `${name} (${group.detail})` : name;
     });
-    const hidden = active.length - entries.length;
+    const hidden = groups.slice(shown.length).reduce((sum, group) => sum + group.count, 0);
 
     return `${entries.join(', ')}${hidden > 0 ? ` +${hidden}` : ''}`;
 }
 
 export class OptimizerAgentsWidget implements Widget {
     getDefaultColor(): string { return 'brightCyan'; }
-    getDescription(): string { return 'Displays the agents running or waiting, as a count or as a list with each agent\'s model and effort (Worker 1 — Sonnet 4.5 medium).\nNeeds CC Optimizer; hidden without it in this session.'; }
-    getDisplayName(): string { return 'Optimizer Agents'; }
+    getDescription(): string { return 'CC Optimizer agents running or waiting, as a count or as a list with each agent\'s model and effort: Implementer ×2 (Sonnet 5.5 medium).\nHidden without CC Optimizer in this session.'; }
+    getDisplayName(): string { return 'Agents'; }
     getCategory(): string { return CATEGORY_OPTIMIZER; }
     getLabelPrefix(item?: WidgetItem): string | undefined {
         return item && isDetailed(item) ? DETAILED_LABEL : undefined;
@@ -127,7 +140,7 @@ export class OptimizerAgentsWidget implements Widget {
     render(item: WidgetItem, context: RenderContext, settings: Settings): string | null {
         if (context.isPreview) {
             return isDetailed(item)
-                ? formatRawOrLabeledValue(item, DETAILED_LABEL, 'Worker 1 — Sonnet 4.5 medium, Analyst — Opus 5.5 high')
+                ? formatRawOrLabeledValue(item, DETAILED_LABEL, 'Implementer ×2 (Sonnet 5.5 medium), Analyst (Opus 5.5 high)')
                 : (item.rawValue ? '2' : '2 agents');
         }
 

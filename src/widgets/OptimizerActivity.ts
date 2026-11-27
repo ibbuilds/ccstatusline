@@ -41,23 +41,27 @@ function describeActivity(runtime: OptimizerRuntime, mode: StrategyMode): string
         return null;
     }
 
-    const strategies = runtime.composition?.strategies ?? [];
-    const parts = mode === 'off'
-        ? []
-        : [
-            ...strategies.filter(strategy => strategy.state === 'active').map(strategy => getStrategyLabel(strategy.name)),
-            ...(mode === 'all'
-                ? strategies.filter(strategy => strategy.state !== 'active').map(strategy => `(${getStrategyLabel(strategy.name)})`)
-                : [])
-        ];
+    if (mode === 'off') {
+        return label;
+    }
 
-    return parts.length > 0 ? `${label} · ${parts.join(', ')}` : label;
+    const strategies = runtime.composition?.strategies ?? [];
+    const active = strategies.filter(strategy => strategy.state === 'active').map(strategy => getStrategyLabel(strategy.name));
+    const allowed = mode === 'all'
+        ? strategies.filter(strategy => strategy.state !== 'active').map(strategy => getStrategyLabel(strategy.name))
+        : [];
+    const parts = [
+        ...(active.length > 0 ? [active.join(', ')] : []),
+        ...(allowed.length > 0 ? [`allowed ${allowed.join(', ')}`] : [])
+    ];
+
+    return parts.length > 0 ? `${label} (${parts.join('; ')})` : label;
 }
 
 export class OptimizerActivityWidget implements Widget {
     getDefaultColor(): string { return 'yellow'; }
-    getDescription(): string { return 'Displays the stage CC Optimizer is in (Planning, Working, Reviewing, Verifying, ...), optionally with the active strategies and the allowed ones in parentheses.\nHidden under native execution and without it in this session.'; }
-    getDisplayName(): string { return 'Optimizer Activity'; }
+    getDescription(): string { return 'CC Optimizer stage (Planning, Working, Reviewing, Verifying, ...), optionally with the active strategies, and the allowed ones: Working (Parallel; allowed TDD).\nHidden under native execution and without CC Optimizer in this session.'; }
+    getDisplayName(): string { return 'Activity'; }
     getCategory(): string { return CATEGORY_OPTIMIZER; }
     getLabelPrefix(): string { return LABEL; }
     getEditorDisplay(item: WidgetItem): WidgetEditorDisplay {
@@ -95,7 +99,7 @@ export class OptimizerActivityWidget implements Widget {
     render(item: WidgetItem, context: RenderContext, settings: Settings): string | null {
         const mode = getStrategyMode(item);
         if (context.isPreview) {
-            return formatRawOrLabeledValue(item, LABEL, mode === 'off' ? 'Working' : 'Working · Parallel');
+            return formatRawOrLabeledValue(item, LABEL, mode === 'off' ? 'Working' : mode === 'active' ? 'Working (Parallel)' : 'Working (Parallel; allowed TDD)');
         }
 
         if (!isRuntimeAware(item) || !context.optimizerRuntime) {

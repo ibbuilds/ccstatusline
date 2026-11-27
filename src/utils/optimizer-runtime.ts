@@ -573,20 +573,20 @@ export function getActivityLabel(stage: string): string | null {
 }
 
 const STRATEGY_LABELS: Record<string, string> = {
-    'plan-execute': 'Plan–Execute',
-    'plan-switch': 'Plan–Switch',
-    'research-first': 'Research-first',
+    'plan-execute': 'Plan-Execute',
+    'plan-switch': 'Plan-Switch',
+    'research-first': 'Research',
     'tdd': 'TDD',
-    'spec-driven': 'Spec-driven',
+    'spec-driven': 'Spec',
     'incremental': 'Incremental',
     'parallel': 'Parallel',
-    'independent-review': 'Independent review',
-    'iterative-refinement': 'Iterative refinement',
-    'verification-gates': 'Verification gates',
-    'retry-escalation': 'Retry and escalation',
-    'context-isolation': 'Context isolation',
-    'worktree-isolation': 'Worktree isolation',
-    'context-management': 'Context management'
+    'independent-review': 'Review',
+    'iterative-refinement': 'Refine',
+    'verification-gates': 'Gates',
+    'retry-escalation': 'Retry',
+    'context-isolation': 'Isolation',
+    'worktree-isolation': 'Worktrees',
+    'context-management': 'Context'
 };
 
 export function getStrategyLabel(name: string): string {
